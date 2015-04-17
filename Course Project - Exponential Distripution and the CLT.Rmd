@@ -1,0 +1,68 @@
+---
+title: "Statistical Inference Class Project - Exponential Distribution and the Central Limit Theorem"
+author: "cafkhami"
+date: "Thursday, April 09, 2015"
+output: html_document
+---
+
+##Overview
+This report invetigates the exponential distribution in R and compares it with the Central Limit Theorem (CLT).  For our purposes, the CLT states that the distribution of averages of iid variables (properly normalized) becomes that of a standard normal as the sample size increases.  We will compare 1000 random exponential simulations to the mean of 40 random exponential samples taken 1000 times.  Specifically exploring the resulting distribution mean, variance and distribution shapes.
+
+##Simulations
+Let's first create the two distributions that we want to compare:
+* 1000 random exponential simulations with lambda = 0.2
+* the mean of 40 random exponential samples (with lambda = 0.2) taken 1000 times.
+
+```{r}
+nosim = 1000
+lambda = 0.2
+mns <- NULL
+
+ex <- rexp(nosim,lambda)
+for (i in 1:nosim) mns = c(mns,mean(rexp(40,lambda)))
+
+dat <- data.frame(x = c(ex, mns),
+                  size = factor(rep(c(1000,40),rep(nosim,2))))
+```
+
+##Sample Mean Vs Theoretical Mean
+Let's evaluate the mean of the two pieces of data that we simulated above and plot the distributions along with their means.
+
+```{r}
+ex.mn <- mean(dat[dat$size==1000,1])
+mns.mn <- mean(dat[dat$size==40,1])
+
+dat <- cbind(dat, mn = rep(c(ex.mn,mns.mn),rep(nosim,2)))
+library(ggplot2)
+g <- ggplot(dat, aes(x = x, fill = size)) +
+  geom_histogram(alpha = .20, binwidth=.5, colour = "black", aes(y = ..density..)) +
+  geom_vline(aes(xintercept = mn), dat, size = 1) +
+  facet_grid(. ~ size)
+g
+```
+
+The graphs above show that while the distributions are quite different, the means look to be fairly similar.  For an exponential distibution with an infinite number of smaples the mean should be `1/lambda` lets evaluate this theoretical mean with the actual means of our distributions:
+
+```{r}
+#Theoretical mean = 1/lambda
+th.mn = 1/lambda
+
+th.mn #mean - theoretical
+ex.mn #mean - 1000 random samples
+mns.mn #mean - 1000 means of 40 random samples
+```
+
+The three means are all very similar, proving that as the CLT states, `the mean of the mean of smaller samples of a distribution is equivalent to its theoretical mean.`
+
+##Sample Variance vs Theoretical Variance
+Let's evaluate the variance of the two pieces of data that we simulated above and plot the distributions along with their variances.
+
+```{r}
+ex.var <- (sd(dat[dat$size==1000,1]))^2
+mns.var <- (sd(dat[dat$size==40,1]))^2
+
+dat <- cbind(dat, mn = rep(c(ex.var,mns.var),rep(nosim,2)))
+
+ex.var
+mns.var
+```

@@ -1,0 +1,47 @@
+---
+title: "Tooth Growth Analysis"
+author: "cafkhami"
+date: "Thursday, April 09, 2015"
+output: html_document
+---
+
+##Exploratory Analysis
+Lets graph a histogram of the tooth growth and separate out the colour by dose. 
+```{r}
+library(datasets)
+library(ggplot2)
+data(ToothGrowth)
+
+g <- ggplot(ToothGrowth, aes(x = len, colour = as.factor(dose)))+geom_histogram(alpha = .20, binwidth=.5)
+g# + facet_grid(. ~ dose)
+
+```
+
+This plot makes it look like there may be a difference in tooth growth based on the dose alone.
+
+Now lets look at the effect of supplement type
+```{r}
+f <- ggplot(ToothGrowth, aes(x = len, colour = supp))+geom_histogram(alpha = .20, binwidth=.5)
+f + facet_grid(. ~ supp)
+
+```
+
+This plot indicates that there may be a difference due to supplement type.  Let's explore further.
+
+##Tests
+Does dose really have an effect on the length of the tooth?  Lets determine the power of the assumption that the difference between a dose of 0.5 and 2.0 is greater than 5 
+
+mu_2.0 - mu_0.5 > 5
+
+Let's set up the data and preform a t.test.
+```{r}
+len_5 <- ToothGrowth$len[ToothGrowth$dose == 0.5]
+len_2 <- ToothGrowth$len[ToothGrowth$dose == 2]
+delta <- 5
+n = length(len_5)
+sd = sd(len_2-len_5)
+
+power.t.test(n,delta,sd,type = "paired", alt = "one.sided")$power
+
+t.test(ToothGrowth$supp, ToothGrowth$len, paired = FALSE)$conf
+```
